@@ -1,4 +1,3 @@
-// Configurazione Supabase
 const SUPABASE_URL = 'https://ydfioyuwqaqhiscwgpok.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkZmlveXV3cWFxaGlzY3dncG9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzU4NTcsImV4cCI6MjA5MjMxMTg1N30.CRj5KxytTuWP7PPupR-xywZTdssKDkRCwldg89GOnHE';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);

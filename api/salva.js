@@ -4,7 +4,7 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
   try {
-    const r = await fetch(`https://ydfioyuwqaqhiscwgpok.supabase.co/rest/v1/risposte`, {
+    const r = await fetch('https://ydfioyuwqaqhiscwgpok.supabase.co/rest/v1/risposte', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

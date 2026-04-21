@@ -7,38 +7,25 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f7fa;min-height:100vh;padding:1.5rem 1rem}
-.wrap{max-width:760px;margin:0 auto}
+.wrap{max-width:720px;margin:0 auto}
 .card{background:#fff;border-radius:16px;padding:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:1rem}
 h1{font-size:22px;font-weight:600;color:#111;margin-bottom:.3rem}
-h2{font-size:16px;font-weight:600;color:#111;margin-bottom:1rem}
-p{color:#555;font-size:14px;line-height:1.6}
+p{color:#555;font-size:13px;line-height:1.6}
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1rem}
 .stat{background:#f8fafc;border-radius:12px;padding:1rem;text-align:center}
 .stat-n{font-size:28px;font-weight:700;color:#111}
 .stat-l{font-size:11px;color:#888;margin-top:4px}
 .chart-wrap{position:relative;width:100%;height:280px;margin-bottom:1rem}
-.btn{padding:10px 20px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
-.btn-blue{background:#1d4ed8;color:#fff}
+.btn{padding:10px 18px;border-radius:10px;border:1.5px solid #e5e7eb;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#374151}
+.btn:hover{background:#f9fafb}
+.btn-blue{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
 .btn-blue:hover{background:#1e40af}
-.btn-outline{background:#fff;color:#374151;border:1.5px solid #e5e7eb}
-.btn-outline:hover{background:#f9fafb}
-.btn-red{background:#fff;color:#dc2626;border:1.5px solid #fca5a5}
-.btn-red:hover{background:#fef2f2}
-.tab-row{display:flex;gap:4px;border-bottom:1px solid #e5e7eb;margin-bottom:1rem}
-.tab{padding:8px 16px;font-size:13px;cursor:pointer;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-weight:500}
-.tab.active{color:#1d4ed8;border-bottom-color:#1d4ed8}
-.tab-p{display:none}.tab-p.active{display:block}
-.legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:8px;font-size:12px;color:#666}
+.legend{display:flex;gap:16px;margin-bottom:8px;font-size:12px;color:#666;flex-wrap:wrap}
 .legend span{display:flex;align-items:center;gap:5px}
 .lsq{width:10px;height:10px;border-radius:2px;flex-shrink:0}
-.ai-out{font-size:13px;line-height:1.75;color:#374151;padding:.25rem 0}
+.ai-out{font-size:13px;line-height:1.75;color:#374151}
 .ai-out p{margin-bottom:.75rem}
-table{width:100%;font-size:12px;border-collapse:collapse}
-th{text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;color:#888;font-weight:500}
-td{padding:6px 8px;border-bottom:1px solid #f1f5f9;color:#374151}
 .loading{text-align:center;padding:2rem;color:#9ca3af;font-size:14px}
-a{color:#1d4ed8;font-size:13px;text-decoration:none}
-a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -47,62 +34,46 @@ a:hover{text-decoration:underline}
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
       <div>
         <h1>Dashboard ITE</h1>
-        <p>Risultati in tempo reale — aggiornati ad ogni refresh</p>
+        <p>Psicologia dei Processi Cognitivi — Annette Perkovic · Martina Fossa</p>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-outline" onclick="loadData()">Aggiorna</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="loadData()">Aggiorna</button>
         <button class="btn btn-blue" id="ai-btn" onclick="analyzeAI()">Analisi AI ↗</button>
       </div>
     </div>
   </div>
 
-  <div class="stat-grid" id="stat-grid">
+  <div class="stat-grid">
     <div class="stat"><div class="stat-n" id="st-s1">—</div><div class="stat-l">risposte S1</div></div>
     <div class="stat"><div class="stat-n" id="st-s2">—</div><div class="stat-l">risposte S2</div></div>
-    <div class="stat"><div class="stat-n" id="st-s3">—</div><div class="stat-l">risposte S3</div></div>
-    <div class="stat"><div class="stat-n" id="st-ite" style="color:#1d4ed8">—</div><div class="stat-l">Δ ITE (1→3×)</div></div>
+    <div class="stat"><div class="stat-n" id="st-old">—</div><div class="stat-l">media frasi vecchie</div></div>
+    <div class="stat"><div class="stat-n" id="st-new">—</div><div class="stat-l">media frasi nuove</div></div>
+    <div class="stat"><div class="stat-n" id="st-delta" style="color:#1d4ed8">—</div><div class="stat-l">Δ ITE (vecchie − nuove)</div></div>
   </div>
 
   <div class="card">
-    <div class="tab-row">
-      <button class="tab active" onclick="switchTab('chart1')">Esposizioni</button>
-      <button class="tab" onclick="switchTab('chart2')">Per sessione</button>
-      <button class="tab" onclick="switchTab('raw')">Dati grezzi</button>
-      <button class="tab" onclick="switchTab('ai')">Interpretazione AI</button>
-    </div>
-
-    <div class="tab-p active" id="tab-chart1">
-      <div class="legend" id="leg1"></div>
-      <div class="chart-wrap"><canvas id="c1" role="img" aria-label="Credibilità media per numero di esposizioni">Caricamento...</canvas></div>
-    </div>
-
-    <div class="tab-p" id="tab-chart2">
-      <div class="legend" id="leg2"></div>
-      <div class="chart-wrap"><canvas id="c2" role="img" aria-label="Andamento credibilità nelle tre sessioni">Caricamento...</canvas></div>
-    </div>
-
-    <div class="tab-p" id="tab-raw">
-      <div id="raw-wrap" class="loading">Caricamento dati...</div>
-    </div>
-
-    <div class="tab-p" id="tab-ai">
-      <div id="ai-out" class="ai-out loading">Premi "Analisi AI" per generare un'interpretazione automatica dei risultati.</div>
-    </div>
+    <div class="legend" id="leg1"></div>
+    <div class="chart-wrap"><canvas id="c1" role="img" aria-label="Confronto credibilità frasi vecchie vs nuove">Caricamento...</canvas></div>
   </div>
 
-  <div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-    <a href="index.html">← Torna al questionario</a>
-    <button class="btn btn-red" onclick="clearData()">Azzera tutti i dati</button>
+  <div class="card">
+    <div id="ai-out" class="loading">Premi "Analisi AI" per generare l'interpretazione automatica.</div>
+  </div>
+
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+    <p style="color:#9ca3af;font-size:12px">Dashboard riservata ai docenti</p>
+    <button class="btn" style="color:#dc2626;border-color:#fca5a5" onclick="clearData()">Azzera dati</button>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="config.js"></script>
-<script src="data.js"></script>
 <script>
-let charts = {};
-let allRows = [];
+const SUPABASE_URL = 'https://ydfioyuwqaqhiscwgpok.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkZmlveXV3cWFxaGlzY3dncG9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzU4NTcsImV4cCI6MjA5MjMxMTg1N30.CRj5KxytTuWP7PPupR-xywZTdssKDkRCwldg89GOnHE';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allRows = [], chart1;
 
 async function loadData() {
   const { data, error } = await supabase.from('risposte').select('*');
@@ -111,101 +82,44 @@ async function loadData() {
 
   const s1 = allRows.filter(r => r.sessione === 1);
   const s2 = allRows.filter(r => r.sessione === 2);
-  const s3 = allRows.filter(r => r.sessione === 3);
-
-  document.getElementById('st-s1').textContent = new Set(s1.map(r => r.created_at?.slice(0,10)+r.sessione)).size || s1.length;
-  document.getElementById('st-s2').textContent = new Set(s2.map(r => r.created_at?.slice(0,10)+r.sessione)).size || s2.length;
-  document.getElementById('st-s3').textContent = new Set(s3.map(r => r.created_at?.slice(0,10)+r.sessione)).size || s3.length;
-
-  const prima = allRows.filter(r => r.esposizione === 'prima').map(r => r.rating);
-  const seconda = allRows.filter(r => r.esposizione === 'seconda').map(r => r.rating);
-  const terza = allRows.filter(r => r.esposizione === 'terza').map(r => r.rating);
-  const unica = allRows.filter(r => r.esposizione === 'unica').map(r => r.rating);
-
+  const old = s2.filter(r => r.tipo === 'vecchia').map(r => r.rating);
+  const nov = s2.filter(r => r.tipo === 'nuova').map(r => r.rating);
   const avg = arr => arr.length ? +(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2) : 0;
 
-  const deltaITE = prima.length && terza.length ? (avg(terza) - avg(prima)).toFixed(2) : '—';
-  const deltaEl = document.getElementById('st-ite');
-  deltaEl.textContent = deltaITE;
-  if (deltaITE !== '—') deltaEl.style.color = parseFloat(deltaITE) > 0 ? '#15803d' : '#dc2626';
+  document.getElementById('st-s1').textContent = s1.length;
+  document.getElementById('st-s2').textContent = s2.length;
+  document.getElementById('st-old').textContent = avg(old).toFixed(2);
+  document.getElementById('st-new').textContent = avg(nov).toFixed(2);
+  const delta = (avg(old) - avg(nov)).toFixed(2);
+  const el = document.getElementById('st-delta');
+  el.textContent = (delta > 0 ? '+' : '') + delta;
+  el.style.color = delta > 0 ? '#15803d' : '#dc2626';
 
-  drawC1(avg(prima), avg(seconda), avg(terza), avg(unica));
-  drawC2(avg(s1.map(r=>r.rating)), avg(s2.map(r=>r.rating)), avg(s3.map(r=>r.rating)));
-  drawRaw();
+  drawChart(avg(old), avg(nov));
 }
 
-function drawC1(p, s, t, u) {
-  if (charts.c1) charts.c1.destroy();
-  charts.c1 = new Chart(document.getElementById('c1'), {
+function drawChart(old, nov) {
+  if (chart1) chart1.destroy();
+  chart1 = new Chart(document.getElementById('c1'), {
     type: 'bar',
     data: {
-      labels: ['1a esposizione', '2a esposizione', '3a esposizione', 'Controllo (unica)'],
+      labels: ['Frasi già viste (S1+S2)', 'Frasi nuove (solo S2)'],
       datasets: [{
-        data: [p, s, t, u],
-        backgroundColor: ['#bfdbfe','#93c5fd','#3b82f6','#d1d5db'],
-        borderColor: ['#3b82f6','#2563eb','#1d4ed8','#9ca3af'],
+        data: [old, nov],
+        backgroundColor: ['#3b82f6', '#d1d5db'],
+        borderColor: ['#1d4ed8', '#9ca3af'],
         borderWidth: 1,
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       scales: { y: { min: 1, max: 7, ticks: { stepSize: 1 }, title: { display: true, text: 'Credibilità media (1–7)' } } },
-      plugins: { legend: { display: false }, title: { display: true, text: 'Effetto ITE: credibilità per numero di esposizioni' } }
+      plugins: { legend: { display: false }, title: { display: true, text: 'Effetto ITE: frasi vecchie vs frasi nuove' } }
     }
   });
   document.getElementById('leg1').innerHTML = `
-    <span><span class="lsq" style="background:#bfdbfe"></span>1a esposizione</span>
-    <span><span class="lsq" style="background:#93c5fd"></span>2a esposizione</span>
-    <span><span class="lsq" style="background:#3b82f6"></span>3a esposizione</span>
-    <span><span class="lsq" style="background:#d1d5db"></span>controllo</span>`;
-}
-
-function drawC2(s1, s2, s3) {
-  if (charts.c2) charts.c2.destroy();
-  charts.c2 = new Chart(document.getElementById('c2'), {
-    type: 'line',
-    data: {
-      labels: ['Sessione 1\n(martedì)', 'Sessione 2\n(giovedì)', 'Sessione 3\n(domenica)'],
-      datasets: [{
-        label: 'Media per sessione',
-        data: [s1, s2, s3],
-        borderColor: '#1d4ed8', backgroundColor: 'rgba(29,78,216,0.08)',
-        tension: 0.3, fill: true, pointRadius: 7, pointBackgroundColor: '#1d4ed8',
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      scales: { y: { min: 1, max: 7, ticks: { stepSize: 1 }, title: { display: true, text: 'Credibilità media (1–7)' } }, x: { ticks: { autoSkip: false } } },
-      plugins: { legend: { display: false }, title: { display: true, text: 'Andamento credibilità media nelle tre sessioni' } }
-    }
-  });
-  document.getElementById('leg2').innerHTML = `<span><span class="lsq" style="background:#1d4ed8"></span>Media generale per sessione</span>`;
-}
-
-function drawRaw() {
-  if (!allRows.length) { document.getElementById('raw-wrap').innerHTML = '<p style="color:#9ca3af;padding:1rem">Nessun dato ancora.</p>'; return; }
-  const rows = allRows.slice(-100).reverse().map(r => `
-    <tr>
-      <td>S${r.sessione}</td>
-      <td>${r.esposizione}</td>
-      <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.stmt_text}</td>
-      <td style="color:${r.vero?'#15803d':'#dc2626'}">${r.vero?'V':'F'}</td>
-      <td><strong>${r.rating}/7</strong></td>
-      <td>${r.heard?'sì':'no'}</td>
-    </tr>`).join('');
-  document.getElementById('raw-wrap').innerHTML = `
-    <div style="overflow-x:auto">
-    <table>
-      <thead><tr><th>Sess.</th><th>Espos.</th><th>Affermazione</th><th>Vera?</th><th>Voto</th><th>Già sentita</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>
-    <p style="color:#9ca3af;font-size:11px;margin-top:.5rem">Ultimi 100 record</p>`;
-}
-
-function switchTab(name) {
-  const names = ['chart1','chart2','raw','ai'];
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', names[i]===name));
-  document.querySelectorAll('.tab-p').forEach((p,i) => p.classList.toggle('active', names[i]===name));
+    <span><span class="lsq" style="background:#3b82f6"></span>Frasi già viste</span>
+    <span><span class="lsq" style="background:#d1d5db"></span>Frasi nuove</span>`;
 }
 
 async function analyzeAI() {
@@ -213,45 +127,36 @@ async function analyzeAI() {
   const out = document.getElementById('ai-out');
   btn.disabled = true; btn.textContent = 'Analisi...';
   out.innerHTML = '<p>Generando interpretazione accademica...</p>';
-  switchTab('ai');
 
+  const s2 = allRows.filter(r => r.sessione === 2);
+  const old = s2.filter(r => r.tipo === 'vecchia').map(r => r.rating);
+  const nov = s2.filter(r => r.tipo === 'nuova').map(r => r.rating);
   const avg = arr => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2) : 'N/D';
-  const prima = allRows.filter(r=>r.esposizione==='prima').map(r=>r.rating);
-  const seconda = allRows.filter(r=>r.esposizione==='seconda').map(r=>r.rating);
-  const terza = allRows.filter(r=>r.esposizione==='terza').map(r=>r.rating);
-  const unica = allRows.filter(r=>r.esposizione==='unica').map(r=>r.rating);
-  const s1 = allRows.filter(r=>r.sessione===1);
-  const s2 = allRows.filter(r=>r.sessione===2);
-  const s3 = allRows.filter(r=>r.sessione===3);
 
-  const prompt = `Esperimento sull'Illusory Truth Effect, replica universitaria (tema: cultura generale).
-Design: 3 sessioni (martedì sera, giovedì, domenica). ~34 studenti universitari.
-Struttura: 6 affermazioni ripetute 3 volte, 5 ripetute 2 volte, 5 uniche per sessione (controllo). 16 affermazioni totali per sessione.
+  const prompt = `Esperimento sull'Illusory Truth Effect, replica universitaria.
+Design: 2 sessioni. Sessione 1: scala "quanto è interessante?" (1-7), 16 frasi nuove — serve solo come esposizione iniziale, non rivela lo scopo. Sessione 2 (2-3 giorni dopo): scala "quanto è vera?" (1-7), 8 frasi già viste in S1 + 8 frasi nuove mescolate.
 
-DATI RACCOLTI:
-- Sessione 1: ${s1.length} risposte totali
-- Sessione 2: ${s2.length} risposte totali
-- Sessione 3: ${s3.length} risposte totali
-- Media 1a esposizione: ${avg(prima)} / 7
-- Media 2a esposizione: ${avg(seconda)} / 7
-- Media 3a esposizione: ${avg(terza)} / 7
-- Media controllo (unica esposizione): ${avg(unica)} / 7
-- Delta ITE (1a → 3a): ${prima.length&&terza.length?(parseFloat(avg(terza))-parseFloat(avg(prima))).toFixed(2):'N/D'}
+DATI:
+- Risposte S1: ${allRows.filter(r=>r.sessione===1).length}
+- Risposte S2: ${s2.length}
+- Media credibilità frasi VECCHIE (già viste): ${avg(old)} / 7
+- Media credibilità frasi NUOVE (mai viste): ${avg(nov)} / 7
+- Delta ITE: ${old.length&&nov.length?(parseFloat(avg(old))-parseFloat(avg(nov))).toFixed(2):'N/D'}
 
-Fornisci un'interpretazione accademica in italiano (max 250 parole) strutturata in paragrafi: 1) Risultato principale 2) Confronto con Hasher et al. 1977 3) Limiti metodologici 4) Conclusione per presentazione universitaria. Scrivi in prosa, senza elenchi puntati.`;
+Scrivi un'interpretazione accademica in italiano (max 200 parole) in paragrafi: 1) Risultato principale 2) Confronto con Hasher et al. 1977 3) Limiti 4) Conclusione. Senza elenchi puntati.`;
 
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 1000,
-        system: 'Sei un esperto di psicologia cognitiva sperimentale. Rispondi sempre in italiano. Sii preciso e accademico ma comprensibile. Scrivi in paragrafi, senza elenchi puntati.',
+        model: 'claude-sonnet-4-20250514', max_tokens: 800,
+        system: 'Sei un esperto di psicologia cognitiva. Rispondi sempre in italiano, in prosa, senza elenchi.',
         messages: [{ role: 'user', content: prompt }]
       })
     });
     const data = await resp.json();
-    const text = data.content?.filter(c=>c.type==='text').map(c=>c.text).join('\n') || 'Risposta non disponibile.';
+    const text = data.content?.filter(c=>c.type==='text').map(c=>c.text).join('\n') || 'N/D';
     out.innerHTML = text.split('\n').filter(l=>l.trim()).map(l=>`<p>${l}</p>`).join('');
   } catch(e) {
     out.innerHTML = `<p style="color:#dc2626">Errore: ${e.message}</p>`;
@@ -260,11 +165,8 @@ Fornisci un'interpretazione accademica in italiano (max 250 parole) strutturata 
 }
 
 async function clearData() {
-  if (!confirm('Sei sicura di voler cancellare TUTTI i dati raccolti?')) return;
-  const { error } = await supabase.from('risposte').delete().neq('id', 0);
-  if (error) { alert('Errore: ' + error.message); return; }
-  allRows = [];
-  alert('Dati azzerati.');
+  if (!confirm('Cancellare tutti i dati?')) return;
+  await supabase.from('risposte').delete().neq('id', 0);
   loadData();
 }
 

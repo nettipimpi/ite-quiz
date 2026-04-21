@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esperimento ITE</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f7fa;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:1.5rem 1rem}
+.wrap{width:100%;max-width:520px}
+.card{background:#fff;border-radius:16px;padding:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:1rem}
+h1{font-size:22px;font-weight:600;color:#111;margin-bottom:.4rem}
+h2{font-size:18px;font-weight:600;color:#111;margin-bottom:.75rem}
+p{color:#555;font-size:14px;line-height:1.6;margin-bottom:.6rem}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 12px;border-radius:20px;letter-spacing:.5px}
+.s1{background:#dbeafe;color:#1e40af}
+.s2{background:#dcfce7;color:#166534}
+.s3{background:#fef3c7;color:#92400e}
+.sess-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1rem}
+.ss{padding:12px 8px;border-radius:12px;border:1.5px solid #e5e7eb;background:#fff;font-size:13px;cursor:pointer;text-align:center;transition:all .15s}
+.ss:hover{border-color:#93c5fd;background:#eff6ff}
+.ss.sel-s1{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8}
+.ss.sel-s2{border-color:#22c55e;background:#f0fdf4;color:#15803d}
+.ss.sel-s3{border-color:#f59e0b;background:#fffbeb;color:#b45309}
+.ss .ss-name{font-weight:600;margin-bottom:3px}
+.ss .ss-date{font-size:11px;color:#888}
+.prog{height:5px;background:#e5e7eb;border-radius:3px;margin-bottom:1.25rem;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .3s}
+.stmt-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.25rem;text-align:center}
+.stmt-text{font-size:16px;font-weight:500;line-height:1.6;color:#111;margin-bottom:1.25rem}
+.q-label{font-size:12px;color:#888;margin-bottom:.5rem;text-align:left}
+.heard-row{display:flex;gap:10px;justify-content:center;margin-bottom:1.25rem}
+.hb{padding:8px 24px;border-radius:10px;border:1.5px solid #e5e7eb;background:#fff;font-size:13px;cursor:pointer;color:#333;transition:all .15s;font-weight:500}
+.hb:hover{border-color:#93c5fd;background:#eff6ff}
+.hb.sel{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+.rating-row{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+.rb{width:40px;height:40px;border-radius:50%;border:1.5px solid #e5e7eb;background:#fff;font-size:14px;font-weight:600;cursor:pointer;color:#333;transition:all .15s}
+.rb:hover{border-color:#93c5fd;background:#eff6ff}
+.rb.sel{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+.main-btn{width:100%;padding:13px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s;margin-top:.25rem}
+.main-btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-blue{background:#1d4ed8;color:#fff}
+.btn-blue:hover:not(:disabled){background:#1e40af}
+.counter{font-size:12px;color:#888}
+.done-icon{width:52px;height:52px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:22px;color:#166534;font-weight:700}
+.err{color:#dc2626;font-size:13px;text-align:center;margin-top:.5rem;min-height:1.2rem}
+.screen{display:none}.screen.active{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="screen active" id="s-home">
+    <div class="card">
+      <h1>Esperimento ITE</h1>
+      <p>Psicologia dei Processi Cognitivi</p>
+      <p style="margin-top:.4rem">Leggi ogni affermazione e indica quanto ti sembra vera. Non ci sono risposte giuste o sbagliate — rispondi in modo spontaneo. Dati anonimi.</p>
+    </div>
+    <div class="card">
+      <h2>Quale sessione fai oggi?</h2>
+      <div class="sess-grid">
+        <div class="ss" id="btn-s1" onclick="selectSess(1)">
+          <div class="ss-name">Sessione 1</div>
+          <div class="ss-date">Martedì sera</div>
+        </div>
+        <div class="ss" id="btn-s2" onclick="selectSess(2)">
+          <div class="ss-name">Sessione 2</div>
+          <div class="ss-date">Giovedì</div>
+        </div>
+        <div class="ss" id="btn-s3" onclick="selectSess(3)">
+          <div class="ss-name">Sessione 3</div>
+          <div class="ss-date">Domenica</div>
+        </div>
+      </div>
+      <div id="sess-detail" style="display:none;margin-top:.25rem">
+        <p id="sess-desc" style="margin-bottom:1rem;color:#374151"></p>
+        <button class="main-btn btn-blue" onclick="startQuiz()">Inizia →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="s-quiz">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+        <span class="badge" id="q-badge"></span>
+        <span class="counter" id="q-counter"></span>
+      </div>
+      <div class="prog"><div class="prog-fill" id="prog-fill"></div></div>
+      <div class="stmt-box">
+        <p class="stmt-text" id="q-text"></p>
+        <div class="q-label">Hai già sentito questa affermazione?</div>
+        <div class="heard-row">
+          <button class="hb" onclick="setHeard(0)">No, mai</button>
+          <button class="hb" onclick="setHeard(1)">Sì, già sentita</button>
+        </div>
+        <div class="q-label">Quanto ti sembra vera? &nbsp;(1 = per niente vera &nbsp;&nbsp;·&nbsp;&nbsp; 7 = assolutamente vera)</div>
+        <div class="rating-row" id="rating-row"></div>
+      </div>
+      <button class="main-btn btn-blue" id="next-btn" disabled onclick="nextQ()">Avanti →</button>
+      <div class="err" id="q-err"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="s-done">
+    <div class="card" style="text-align:center;padding:2rem 1.5rem">
+      <div class="done-icon">✓</div>
+      <h2>Grazie!</h2>
+      <p>Le tue risposte sono state registrate.</p>
+      <p id="done-next" style="margin-top:.75rem;color:#9ca3af;font-size:13px"></p>
+    </div>
+  </div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

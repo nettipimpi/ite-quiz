@@ -28,14 +28,13 @@ p.desc{color:#555;font-size:13px;line-height:1.6;margin-bottom:0}
 .main-btn:disabled{opacity:.35;cursor:not-allowed}
 .main-btn:hover:not(:disabled){background:#1e40af}
 .counter{font-size:12px;color:#aaa;text-align:right;margin-bottom:.5rem}
-.done-icon{width:52px;height:52px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:22px;color:#166634;font-weight:700}
+.done-icon{width:52px;height:52px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:22px;color:#166534;font-weight:700}
 .err{color:#dc2626;font-size:13px;text-align:center;margin-top:.5rem;min-height:1.2rem}
 .screen{display:none}.screen.active{display:block}
 </style>
 </head>
 <body>
 <div class="wrap">
-
   <div class="screen active" id="s-intro">
     <div class="card">
       <div class="subtitle">Psicologia dei Processi Cognitivi</div>
@@ -45,7 +44,6 @@ p.desc{color:#555;font-size:13px;line-height:1.6;margin-bottom:0}
       <button class="main-btn" style="margin-top:1.25rem" onclick="startQuiz()">Inizia →</button>
     </div>
   </div>
-
   <div class="screen" id="s-quiz">
     <div class="card">
       <div class="counter" id="q-counter"></div>
@@ -60,7 +58,6 @@ p.desc{color:#555;font-size:13px;line-height:1.6;margin-bottom:0}
       <div class="err" id="q-err"></div>
     </div>
   </div>
-
   <div class="screen" id="s-done">
     <div class="card" style="text-align:center;padding:2rem 1.5rem">
       <div class="done-icon">✓</div>
@@ -68,84 +65,33 @@ p.desc{color:#555;font-size:13px;line-height:1.6;margin-bottom:0}
       <p style="color:#555;font-size:14px">Le tue risposte sono state registrate.</p>
     </div>
   </div>
-
 </div>
 <script>
-// 8 già viste in S1 + 8 nuove — mescolate, non si distinguono visivamente
 const STMTS_S2 = [
-  {text:"Il cervello umano si sviluppa fino ai 25 anni circa.", tipo:"nuova"},
   {text:"Il bamboo può crescere più di un metro in un giorno.", tipo:"vecchia"},
-  {text:"Il suono viaggia più velocemente nell'acqua che nell'aria.", tipo:"nuova"},
+  {text:"Il cervello umano si sviluppa fino ai 25 anni circa.", tipo:"nuova"},
   {text:"Gli squali esistono da prima degli alberi.", tipo:"vecchia"},
-  {text:"Le api possono riconoscere volti umani.", tipo:"nuova"},
-  {text:"Il diamante è un ottimo conduttore di calore.", tipo:"vecchia"},
-  {text:"Il cuore di una balena può pesare più di 150 kg.", tipo:"nuova"},
+  {text:"Il suono viaggia più velocemente nell'acqua che nell'aria.", tipo:"nuova"},
   {text:"Alcune rane possono sopravvivere congelandosi.", tipo:"vecchia"},
+  {text:"Le api possono riconoscere volti umani.", tipo:"nuova"},
+  {text:"Il ghiaccio può evaporare senza diventare liquido.", tipo:"vecchia"},
+  {text:"Il cuore di una balena può pesare più di 150 kg.", tipo:"nuova"},
+  {text:"Le banane contengono piccole quantità di radioattività.", tipo:"vecchia"},
   {text:"L'acqua calda può congelare più velocemente di quella fredda.", tipo:"nuova"},
-  {text:"Il caffè deriva da un frutto.", tipo:"vecchia"},
+  {text:"Alcune piante reagiscono alla luce in modi diversi a seconda dell'intensità.", tipo:"vecchia"},
   {text:"Alcuni alberi comunicano attraverso le radici.", tipo:"nuova"},
   {text:"I delfini possono dormire con metà cervello attivo.", tipo:"vecchia"},
   {text:"Alcune tartarughe possono respirare senza usare i polmoni.", tipo:"nuova"},
-  {text:"Le banane contengono piccole quantità di radioattività.", tipo:"vecchia"},
-  {text:"Il corpo umano produce vitamina D grazie alla luce solare.", tipo:"vecchia"},
-  {text:"Alcuni metalli possono galleggiare sull'acqua.", tipo:"vecchia"},
+  {text:"Il miele può conservarsi per decenni senza deteriorarsi.", tipo:"vecchia"},
+  {text:"Il polpo può cambiare colore per comunicare.", tipo:"nuova"},
 ];
-
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-
-let qList=[], curQ=0, ratingV=null, saving=false;
-
+let qList=[],curQ=0,ratingV=null,saving=false;
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
-
-function startQuiz(){
-  qList=shuffle(STMTS_S2);
-  curQ=0;showQ();show('s-quiz');
-}
-
-function showQ(){
-  const pct=(curQ/qList.length*100).toFixed(0);
-  document.getElementById('prog-fill').style.width=pct+'%';
-  document.getElementById('q-counter').textContent=(curQ+1)+' / '+qList.length;
-  document.getElementById('q-text').textContent=qList[curQ].text;
-  document.getElementById('q-err').textContent='';
-  ratingV=null;
-  const rr=document.getElementById('rating-row');
-  rr.innerHTML='';
-  for(let i=1;i<=7;i++){
-    const b=document.createElement('button');
-    b.className='rb';b.textContent=i;
-    b.onclick=()=>setRating(i);
-    rr.appendChild(b);
-  }
-  document.getElementById('next-btn').disabled=true;
-}
-
-function setRating(v){
-  ratingV=v;
-  document.querySelectorAll('.rb').forEach((b,i)=>b.classList.toggle('sel',i===v-1));
-  document.getElementById('next-btn').disabled=false;
-}
-
-async function nextQ(){
-  if(saving)return;
-  saving=true;
-  const btn=document.getElementById('next-btn');
-  btn.disabled=true;btn.textContent='Salvataggio...';
-  try{
-    const res=await fetch('/api/salva',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({sessione:2,stmt_text:qList[curQ].text,tipo:qList[curQ].tipo,rating:ratingV})
-    });
-    if(!res.ok)throw new Error('errore');
-  }catch(e){
-    document.getElementById('q-err').textContent='Errore di rete, riprova.';
-    btn.disabled=false;btn.textContent='Avanti →';saving=false;return;
-  }
-  saving=false;curQ++;
-  if(curQ>=qList.length){show('s-done')}
-  else{btn.textContent='Avanti →';showQ();}
-}
+function startQuiz(){qList=shuffle(STMTS_S2);curQ=0;showQ();show('s-quiz')}
+function showQ(){const pct=(curQ/qList.length*100).toFixed(0);document.getElementById('prog-fill').style.width=pct+'%';document.getElementById('q-counter').textContent=(curQ+1)+' / '+qList.length;document.getElementById('q-text').textContent=qList[curQ].text;document.getElementById('q-err').textContent='';ratingV=null;const rr=document.getElementById('rating-row');rr.innerHTML='';for(let i=1;i<=7;i++){const b=document.createElement('button');b.className='rb';b.textContent=i;b.onclick=()=>setRating(i);rr.appendChild(b)}document.getElementById('next-btn').disabled=true}
+function setRating(v){ratingV=v;document.querySelectorAll('.rb').forEach((b,i)=>b.classList.toggle('sel',i===v-1));document.getElementById('next-btn').disabled=false}
+async function nextQ(){if(saving)return;saving=true;const btn=document.getElementById('next-btn');btn.disabled=true;btn.textContent='Salvataggio...';try{const res=await fetch('/api/salva',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessione:2,stmt_text:qList[curQ].text,tipo:qList[curQ].tipo,rating:ratingV})});if(!res.ok)throw new Error('errore')}catch(e){document.getElementById('q-err').textContent='Errore di rete, riprova.';btn.disabled=false;btn.textContent='Avanti →';saving=false;return}saving=false;curQ++;if(curQ>=qList.length){show('s-done')}else{btn.textContent='Avanti →';showQ()}}
 </script>
 </body>
 </html>

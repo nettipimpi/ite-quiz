@@ -11,9 +11,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .card{background:#fff;border-radius:16px;padding:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:1rem}
 h1{font-size:22px;font-weight:600;color:#111;margin-bottom:.3rem}
 p{color:#555;font-size:13px;line-height:1.6}
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1rem}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1rem}
 .stat{background:#f8fafc;border-radius:12px;padding:1rem;text-align:center}
-.stat-n{font-size:28px;font-weight:700;color:#111}
+.stat-n{font-size:24px;font-weight:700;color:#111}
 .stat-l{font-size:11px;color:#888;margin-top:4px}
 .chart-wrap{position:relative;width:100%;height:280px;margin-bottom:1rem}
 .btn{padding:10px 18px;border-radius:10px;border:1.5px solid #e5e7eb;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#374151}
@@ -26,6 +26,10 @@ p{color:#555;font-size:13px;line-height:1.6}
 .ai-out{font-size:13px;line-height:1.75;color:#374151}
 .ai-out p{margin-bottom:.75rem}
 .loading{text-align:center;padding:2rem;color:#9ca3af;font-size:14px}
+.tab-row{display:flex;gap:2px;border-bottom:1px solid #e5e7eb;margin-bottom:1rem}
+.tab{padding:8px 16px;font-size:13px;cursor:pointer;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-weight:500}
+.tab.active{color:#1d4ed8;border-bottom-color:#1d4ed8}
+.tab-p{display:none}.tab-p.active{display:block}
 </style>
 </head>
 <body>
@@ -44,24 +48,35 @@ p{color:#555;font-size:13px;line-height:1.6}
   </div>
 
   <div class="stat-grid">
-    <div class="stat"><div class="stat-n" id="st-s1">—</div><div class="stat-l">risposte S1</div></div>
-    <div class="stat"><div class="stat-n" id="st-s2">—</div><div class="stat-l">risposte S2</div></div>
-    <div class="stat"><div class="stat-n" id="st-old">—</div><div class="stat-l">media frasi vecchie</div></div>
-    <div class="stat"><div class="stat-n" id="st-new">—</div><div class="stat-l">media frasi nuove</div></div>
-    <div class="stat"><div class="stat-n" id="st-delta" style="color:#1d4ed8">—</div><div class="stat-l">Δ ITE (vecchie − nuove)</div></div>
+    <div class="stat"><div class="stat-n" id="st-s1">—</div><div class="stat-l">partecipanti S1</div></div>
+    <div class="stat"><div class="stat-n" id="st-s2">—</div><div class="stat-l">partecipanti S2</div></div>
+    <div class="stat"><div class="stat-n" id="st-s3">—</div><div class="stat-l">partecipanti S3</div></div>
+    <div class="stat"><div class="stat-n" id="st-rep-s2">—</div><div class="stat-l">ripetute S2</div></div>
+    <div class="stat"><div class="stat-n" id="st-rep-s3">—</div><div class="stat-l">ripetute S3</div></div>
+    <div class="stat"><div class="stat-n" id="st-delta" style="color:#1d4ed8">—</div><div class="stat-l">Δ ITE (S2→S3)</div></div>
   </div>
 
   <div class="card">
-    <div class="legend" id="leg1"></div>
-    <div class="chart-wrap"><canvas id="c1" role="img" aria-label="Confronto credibilità frasi vecchie vs nuove">Caricamento...</canvas></div>
-  </div>
-
-  <div class="card">
-    <div id="ai-out" class="loading">Premi "Analisi AI" per generare l'interpretazione automatica.</div>
+    <div class="tab-row">
+      <button class="tab active" onclick="switchTab('t1')">Effetto ITE</button>
+      <button class="tab" onclick="switchTab('t2')">Curva nel tempo</button>
+      <button class="tab" onclick="switchTab('t3')">Analisi AI</button>
+    </div>
+    <div class="tab-p active" id="tab-t1">
+      <div class="legend" id="leg1"></div>
+      <div class="chart-wrap"><canvas id="c1" role="img" aria-label="Confronto frasi ripetute vs nuove in S2 e S3">Caricamento...</canvas></div>
+    </div>
+    <div class="tab-p" id="tab-t2">
+      <div class="legend" id="leg2"></div>
+      <div class="chart-wrap"><canvas id="c2" role="img" aria-label="Evoluzione credibilità frasi ripetute da S2 a S3">Caricamento...</canvas></div>
+    </div>
+    <div class="tab-p" id="tab-t3">
+      <div id="ai-out" class="loading">Premi "Analisi AI" per generare l'interpretazione automatica.</div>
+    </div>
   </div>
 
   <div class="card" style="display:flex;justify-content:space-between;align-items:center">
-    <p style="color:#9ca3af;font-size:12px">Dashboard riservata ai docenti</p>
+    <p style="color:#9ca3af;font-size:12px">Dashboard riservata — non condividere</p>
     <button class="btn" style="color:#dc2626;border-color:#fca5a5" onclick="clearData()">Azzera dati</button>
   </div>
 </div>
@@ -69,104 +84,130 @@ p{color:#555;font-size:13px;line-height:1.6}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-const SUPABASE_URL = 'https://ydfioyuwqaqhiscwgpok.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkZmlveXV3cWFxaGlzY3dncG9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzU4NTcsImV4cCI6MjA5MjMxMTg1N30.CRj5KxytTuWP7PPupR-xywZTdssKDkRCwldg89GOnHE';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL='https://ydfioyuwqaqhiscwgpok.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkZmlveXV3cWFxaGlzY3dncG9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzU4NTcsImV4cCI6MjA5MjMxMTg1N30.CRj5KxytTuWP7PPupR-xywZTdssKDkRCwldg89GOnHE';
+const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let allRows=[],charts={};
+const avg=arr=>arr.length?+(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2):0;
 
-let allRows = [], chart1;
+async function loadData(){
+  const {data,error}=await supabase.from('risposte').select('*');
+  if(error){console.error(error);return;}
+  allRows=data||[];
+  const s1=allRows.filter(r=>r.sessione===1);
+  const s2=allRows.filter(r=>r.sessione===2);
+  const s3=allRows.filter(r=>r.sessione===3);
+  const repS2=s2.filter(r=>r.tipo==='vecchia').map(r=>r.rating);
+  const repS3=s3.filter(r=>r.tipo==='vecchia').map(r=>r.rating);
+  const novS2=s2.filter(r=>r.tipo==='nuova').map(r=>r.rating);
+  const novS3=s3.filter(r=>r.tipo==='nuova').map(r=>r.rating);
 
-async function loadData() {
-  const { data, error } = await supabase.from('risposte').select('*');
-  if (error) { console.error(error); return; }
-  allRows = data || [];
+  document.getElementById('st-s1').textContent=s1.length;
+  document.getElementById('st-s2').textContent=s2.length;
+  document.getElementById('st-s3').textContent=s3.length;
+  document.getElementById('st-rep-s2').textContent=avg(repS2).toFixed(2);
+  document.getElementById('st-rep-s3').textContent=avg(repS3).toFixed(2);
+  const delta=(avg(repS3)-avg(repS2)).toFixed(2);
+  const el=document.getElementById('st-delta');
+  el.textContent=(delta>0?'+':'')+delta;
+  el.style.color=delta>0?'#15803d':'#dc2626';
 
-  const s1 = allRows.filter(r => r.sessione === 1);
-  const s2 = allRows.filter(r => r.sessione === 2);
-  const old = s2.filter(r => r.tipo === 'vecchia').map(r => r.rating);
-  const nov = s2.filter(r => r.tipo === 'nuova').map(r => r.rating);
-  const avg = arr => arr.length ? +(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2) : 0;
-
-  document.getElementById('st-s1').textContent = s1.length;
-  document.getElementById('st-s2').textContent = s2.length;
-  document.getElementById('st-old').textContent = avg(old).toFixed(2);
-  document.getElementById('st-new').textContent = avg(nov).toFixed(2);
-  const delta = (avg(old) - avg(nov)).toFixed(2);
-  const el = document.getElementById('st-delta');
-  el.textContent = (delta > 0 ? '+' : '') + delta;
-  el.style.color = delta > 0 ? '#15803d' : '#dc2626';
-
-  drawChart(avg(old), avg(nov));
+  drawC1(avg(repS2),avg(novS2),avg(repS3),avg(novS3));
+  drawC2(avg(repS2),avg(repS3),avg(novS2),avg(novS3));
 }
 
-function drawChart(old, nov) {
-  if (chart1) chart1.destroy();
-  chart1 = new Chart(document.getElementById('c1'), {
-    type: 'bar',
-    data: {
-      labels: ['Frasi già viste (S1+S2)', 'Frasi nuove (solo S2)'],
-      datasets: [{
-        data: [old, nov],
-        backgroundColor: ['#3b82f6', '#d1d5db'],
-        borderColor: ['#1d4ed8', '#9ca3af'],
-        borderWidth: 1,
+function drawC1(rS2,nS2,rS3,nS3){
+  if(charts.c1)charts.c1.destroy();
+  charts.c1=new Chart(document.getElementById('c1'),{
+    type:'bar',
+    data:{
+      labels:['Ripetute S2','Nuove S2','Ripetute S3','Nuove S3'],
+      datasets:[{
+        data:[rS2,nS2,rS3,nS3],
+        backgroundColor:['#3b82f6','#d1d5db','#1d4ed8','#9ca3af'],
+        borderColor:['#1d4ed8','#9ca3af','#1e3a8a','#6b7280'],
+        borderWidth:1
       }]
     },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      scales: { y: { min: 1, max: 7, ticks: { stepSize: 1 }, title: { display: true, text: 'Credibilità media (1–7)' } } },
-      plugins: { legend: { display: false }, title: { display: true, text: 'Effetto ITE: frasi vecchie vs frasi nuove' } }
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{y:{min:1,max:7,ticks:{stepSize:1},title:{display:true,text:'Credibilità media (1–7)'}}},
+      plugins:{legend:{display:false},title:{display:true,text:'Frasi ripetute vs nuove — S2 e S3'}}
     }
   });
-  document.getElementById('leg1').innerHTML = `
-    <span><span class="lsq" style="background:#3b82f6"></span>Frasi già viste</span>
-    <span><span class="lsq" style="background:#d1d5db"></span>Frasi nuove</span>`;
+  document.getElementById('leg1').innerHTML=`
+    <span><span class="lsq" style="background:#3b82f6"></span>Ripetute S2</span>
+    <span><span class="lsq" style="background:#d1d5db"></span>Nuove S2</span>
+    <span><span class="lsq" style="background:#1d4ed8"></span>Ripetute S3</span>
+    <span><span class="lsq" style="background:#9ca3af"></span>Nuove S3</span>`;
 }
 
-async function analyzeAI() {
-  const btn = document.getElementById('ai-btn');
-  const out = document.getElementById('ai-out');
-  btn.disabled = true; btn.textContent = 'Analisi...';
-  out.innerHTML = '<p>Generando interpretazione accademica...</p>';
+function drawC2(rS2,rS3,nS2,nS3){
+  if(charts.c2)charts.c2.destroy();
+  charts.c2=new Chart(document.getElementById('c2'),{
+    type:'line',
+    data:{
+      labels:['Sessione 2 (giovedì)','Sessione 3 (domenica)'],
+      datasets:[
+        {label:'Frasi ripetute',data:[rS2,rS3],borderColor:'#1d4ed8',backgroundColor:'rgba(29,78,216,0.08)',tension:0.3,fill:true,pointRadius:6,pointBackgroundColor:'#1d4ed8'},
+        {label:'Frasi nuove',data:[nS2,nS3],borderColor:'#9ca3af',backgroundColor:'rgba(156,163,175,0.08)',tension:0.3,fill:true,pointRadius:6,pointBackgroundColor:'#9ca3af',borderDash:[4,4]}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{y:{min:1,max:7,ticks:{stepSize:1},title:{display:true,text:'Credibilità media (1–7)'}},x:{ticks:{autoSkip:false}}},
+      plugins:{legend:{display:false},title:{display:true,text:'Evoluzione credibilità: frasi ripetute vs nuove'}}
+    }
+  });
+  document.getElementById('leg2').innerHTML=`
+    <span><span class="lsq" style="background:#1d4ed8"></span>Frasi ripetute (ITE)</span>
+    <span><span class="lsq" style="background:#9ca3af;border:1px dashed #6b7280"></span>Frasi nuove (controllo)</span>`;
+}
 
-  const s2 = allRows.filter(r => r.sessione === 2);
-  const old = s2.filter(r => r.tipo === 'vecchia').map(r => r.rating);
-  const nov = s2.filter(r => r.tipo === 'nuova').map(r => r.rating);
-  const avg = arr => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2) : 'N/D';
+function switchTab(name){
+  ['t1','t2','t3'].forEach((t,i)=>{
+    document.querySelectorAll('.tab')[i].classList.toggle('active',t===name);
+    document.getElementById('tab-'+t).classList.toggle('active',t===name);
+  });
+}
 
-  const prompt = `Esperimento sull'Illusory Truth Effect, replica universitaria.
-Design: 2 sessioni. Sessione 1: scala "quanto è interessante?" (1-7), 16 frasi nuove — serve solo come esposizione iniziale, non rivela lo scopo. Sessione 2 (2-3 giorni dopo): scala "quanto è vera?" (1-7), 8 frasi già viste in S1 + 8 frasi nuove mescolate.
+async function analyzeAI(){
+  const btn=document.getElementById('ai-btn');
+  const out=document.getElementById('ai-out');
+  btn.disabled=true;btn.textContent='Analisi...';
+  out.innerHTML='<p>Generando interpretazione accademica...</p>';
+  switchTab('t3');
+  const s2=allRows.filter(r=>r.sessione===2);
+  const s3=allRows.filter(r=>r.sessione===3);
+  const repS2=s2.filter(r=>r.tipo==='vecchia').map(r=>r.rating);
+  const repS3=s3.filter(r=>r.tipo==='vecchia').map(r=>r.rating);
+  const novS2=s2.filter(r=>r.tipo==='nuova').map(r=>r.rating);
+  const novS3=s3.filter(r=>r.tipo==='nuova').map(r=>r.rating);
+  const a=arr=>arr.length?(arr.reduce((x,y)=>x+y,0)/arr.length).toFixed(2):'N/D';
+  const prompt=`Esperimento sull'Illusory Truth Effect, replica universitaria.
+Design: 3 sessioni. S1 (martedì): scala "interessante" 1-7, 16 frasi nuove — solo ancoraggio. S2 (giovedì): scala "vera" 1-7, 8 frasi già viste + 8 nuove. S3 (domenica): scala "vera" 1-7, stesse 8 frasi ripetute + 8 nuove diverse.
+Partecipanti: ~34 studenti universitari.
 
 DATI:
-- Risposte S1: ${allRows.filter(r=>r.sessione===1).length}
-- Risposte S2: ${s2.length}
-- Media credibilità frasi VECCHIE (già viste): ${avg(old)} / 7
-- Media credibilità frasi NUOVE (mai viste): ${avg(nov)} / 7
-- Delta ITE: ${old.length&&nov.length?(parseFloat(avg(old))-parseFloat(avg(nov))).toFixed(2):'N/D'}
+- S2 frasi ripetute (2a esposizione): ${a(repS2)} / 7
+- S2 frasi nuove: ${a(novS2)} / 7
+- S3 frasi ripetute (3a esposizione): ${a(repS3)} / 7
+- S3 frasi nuove: ${a(novS3)} / 7
+- Delta ITE (S2→S3): ${repS2.length&&repS3.length?(parseFloat(a(repS3))-parseFloat(a(repS2))).toFixed(2):'N/D'}
 
-Scrivi un'interpretazione accademica in italiano (max 200 parole) in paragrafi: 1) Risultato principale 2) Confronto con Hasher et al. 1977 3) Limiti 4) Conclusione. Senza elenchi puntati.`;
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 800,
-        system: 'Sei un esperto di psicologia cognitiva. Rispondi sempre in italiano, in prosa, senza elenchi.',
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await resp.json();
-    const text = data.content?.filter(c=>c.type==='text').map(c=>c.text).join('\n') || 'N/D';
-    out.innerHTML = text.split('\n').filter(l=>l.trim()).map(l=>`<p>${l}</p>`).join('');
-  } catch(e) {
-    out.innerHTML = `<p style="color:#dc2626">Errore: ${e.message}</p>`;
-  }
-  btn.disabled = false; btn.textContent = 'Analisi AI ↗';
+Scrivi interpretazione accademica italiana (max 220 parole) in paragrafi: 1) Risultato principale — l'effetto ITE si è verificato? 2) Confronto con Hasher et al. 1977 3) Ruolo del gruppo di controllo (frasi nuove) 4) Limiti metodologici 5) Conclusione. Senza elenchi.`;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:'Sei esperto di psicologia cognitiva. Rispondi in italiano, in prosa, senza elenchi.',messages:[{role:'user',content:prompt}]})});
+    const data=await resp.json();
+    const text=data.content?.filter(c=>c.type==='text').map(c=>c.text).join('\n')||'N/D';
+    out.innerHTML=text.split('\n').filter(l=>l.trim()).map(l=>`<p>${l}</p>`).join('');
+  }catch(e){out.innerHTML=`<p style="color:#dc2626">Errore: ${e.message}</p>`;}
+  btn.disabled=false;btn.textContent='Analisi AI ↗';
 }
 
-async function clearData() {
-  if (!confirm('Cancellare tutti i dati?')) return;
-  await supabase.from('risposte').delete().neq('id', 0);
+async function clearData(){
+  if(!confirm('Cancellare tutti i dati?'))return;
+  await supabase.from('risposte').delete().neq('id',0);
   loadData();
 }
 

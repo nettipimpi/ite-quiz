@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Questionario</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f7fa;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:1.5rem 1rem}
+.wrap{width:100%;max-width:520px}
+.card{background:#fff;border-radius:16px;padding:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:1rem}
+h1{font-size:20px;font-weight:600;color:#111;margin-bottom:.3rem}
+.subtitle{font-size:12px;color:#888;margin-bottom:.15rem}
+.authors{font-size:12px;color:#aaa;margin-bottom:1rem}
+p.desc{color:#555;font-size:13px;line-height:1.6;margin-bottom:0}
+.prog{height:5px;background:#e5e7eb;border-radius:3px;margin-bottom:1.25rem;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;background:#1d4ed8;transition:width .3s}
+.stmt-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1.5rem;margin-bottom:1.25rem;text-align:center}
+.stmt-text{font-size:16px;font-weight:500;line-height:1.6;color:#111;margin-bottom:1.5rem}
+.q-label{font-size:13px;color:#666;margin-bottom:.75rem}
+.q-label strong{font-size:18px;color:#111;display:block;margin-top:.2rem}
+.rating-row{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+.rb{width:42px;height:42px;border-radius:50%;border:1.5px solid #e5e7eb;background:#fff;font-size:14px;font-weight:600;cursor:pointer;color:#333;transition:all .15s}
+.rb:hover{border-color:#93c5fd;background:#eff6ff}
+.rb.sel{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+.scale-ends{display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-top:.4rem;padding:0 4px}
+.main-btn{width:100%;padding:13px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;transition:all .15s;background:#1d4ed8;color:#fff}
+.main-btn:disabled{opacity:.35;cursor:not-allowed}
+.main-btn:hover:not(:disabled){background:#1e40af}
+.counter{font-size:12px;color:#aaa;text-align:right;margin-bottom:.5rem}
+.done-icon{width:52px;height:52px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:22px;color:#166534;font-weight:700}
+.err{color:#dc2626;font-size:13px;text-align:center;margin-top:.5rem;min-height:1.2rem}
+.screen{display:none}.screen.active{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="screen active" id="s-intro">
+    <div class="card">
+      <div class="subtitle">Psicologia dei Processi Cognitivi</div>
+      <div class="authors">Annette Perkovic · Martina Fossa</div>
+      <h1>Questionario</h1>
+      <p class="desc" style="margin-top:.75rem">Leggi ogni affermazione e indica da 1 a 7 quanto ti sembra vera (1 = poco, 7 = tanto). Non ci sono risposte giuste o sbagliate — rispondi sinceramente. Dati anonimi.</p>
+      <button class="main-btn" style="margin-top:1.25rem" onclick="startQuiz()">Inizia →</button>
+    </div>
+  </div>
+  <div class="screen" id="s-quiz">
+    <div class="card">
+      <div class="counter" id="q-counter"></div>
+      <div class="prog"><div class="prog-fill" id="prog-fill"></div></div>
+      <div class="stmt-box">
+        <p class="stmt-text" id="q-text"></p>
+        <div class="q-label">Da 1 a 7, quanto ti sembra <strong>VERA</strong> questa affermazione?</div>
+        <div class="rating-row" id="rating-row"></div>
+        <div class="scale-ends"><span>1 — per niente</span><span>7 — completamente</span></div>
+      </div>
+      <button class="main-btn" id="next-btn" disabled onclick="nextQ()">Avanti →</button>
+      <div class="err" id="q-err"></div>
+    </div>
+  </div>
+  <div class="screen" id="s-done">
+    <div class="card" style="text-align:center;padding:2rem 1.5rem">
+      <div class="done-icon">✓</div>
+      <h1 style="margin-bottom:.5rem">Grazie!</h1>
+      <p style="color:#555;font-size:14px">Le tue risposte sono state registrate.</p>
+    </div>
+  </div>
+</div>
+<script>
+const STMTS_S3 = [
+  {text:"Il bamboo può crescere più di un metro in un giorno.", tipo:"vecchia"},
+  {text:"La lingua è l'unico muscolo del corpo attaccato da un solo lato.", tipo:"nuova"},
+  {text:"Gli squali esistono da prima degli alberi.", tipo:"vecchia"},
+  {text:"Alcune specie di formiche coltivano funghi come cibo.", tipo:"nuova"},
+  {text:"Alcune rane possono sopravvivere congelandosi.", tipo:"vecchia"},
+  {text:"I capelli crescono più velocemente durante il sonno.", tipo:"nuova"},
+  {text:"Il ghiaccio può evaporare senza diventare liquido.", tipo:"vecchia"},
+  {text:"I ragni usano la seta per sentire le vibrazioni nell'aria.", tipo:"nuova"},
+  {text:"Le banane contengono piccole quantità di radioattività.", tipo:"vecchia"},
+  {text:"Alcune specie di meduse sono considerate biologicamente immortali.", tipo:"nuova"},
+  {text:"Alcune piante reagiscono alla luce in modi diversi a seconda dell'intensità.", tipo:"vecchia"},
+  {text:"Le stelle che vediamo di notte potrebbero non esistere più.", tipo:"nuova"},
+  {text:"I delfini possono dormire con metà cervello attivo.", tipo:"vecchia"},
+  {text:"Il suono di un fulmine può frantumare il vetro.", tipo:"nuova"},
+  {text:"Il miele può conservarsi per decenni senza deteriorarsi.", tipo:"vecchia"},
+  {text:"Il corpo umano contiene più acqua al mattino che alla sera.", tipo:"nuova"},
+];
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+let qList=[],curQ=0,ratingV=null,saving=false;
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function startQuiz(){qList=shuffle(STMTS_S3);curQ=0;showQ();show('s-quiz')}
+function showQ(){const pct=(curQ/qList.length*100).toFixed(0);document.getElementById('prog-fill').style.width=pct+'%';document.getElementById('q-counter').textContent=(curQ+1)+' / '+qList.length;document.getElementById('q-text').textContent=qList[curQ].text;document.getElementById('q-err').textContent='';ratingV=null;const rr=document.getElementById('rating-row');rr.innerHTML='';for(let i=1;i<=7;i++){const b=document.createElement('button');b.className='rb';b.textContent=i;b.onclick=()=>setRating(i);rr.appendChild(b)}document.getElementById('next-btn').disabled=true}
+function setRating(v){ratingV=v;document.querySelectorAll('.rb').forEach((b,i)=>b.classList.toggle('sel',i===v-1));document.getElementById('next-btn').disabled=false}
+async function nextQ(){if(saving)return;saving=true;const btn=document.getElementById('next-btn');btn.disabled=true;btn.textContent='Salvataggio...';try{const res=await fetch('/api/salva',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessione:3,stmt_text:qList[curQ].text,tipo:qList[curQ].tipo,rating:ratingV})});if(!res.ok)throw new Error('errore')}catch(e){document.getElementById('q-err').textContent='Errore di rete, riprova.';btn.disabled=false;btn.textContent='Avanti →';saving=false;return}saving=false;curQ++;if(curQ>=qList.length){show('s-done')}else{btn.textContent='Avanti →';showQ()}}
+</script>
+</body>
+</html>

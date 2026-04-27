@@ -51,8 +51,8 @@ p{color:#555;font-size:13px;line-height:1.6}
     <div class="stat"><div class="stat-n" id="st-s1">—</div><div class="stat-l">partecipanti S1</div></div>
     <div class="stat"><div class="stat-n" id="st-s2">—</div><div class="stat-l">partecipanti S2</div></div>
     <div class="stat"><div class="stat-n" id="st-s3">—</div><div class="stat-l">partecipanti S3</div></div>
-    <div class="stat"><div class="stat-n" id="st-rep-s2">—</div><div class="stat-l">ripetute S2</div></div>
-    <div class="stat"><div class="stat-n" id="st-rep-s3">—</div><div class="stat-l">ripetute S3</div></div>
+    <div class="stat"><div class="stat-n" id="st-rep-s2">—</div><div class="stat-l">media ripetute S2</div></div>
+    <div class="stat"><div class="stat-n" id="st-rep-s3">—</div><div class="stat-l">media ripetute S3</div></div>
     <div class="stat"><div class="stat-n" id="st-delta" style="color:#1d4ed8">—</div><div class="stat-l">Δ ITE (S2→S3)</div></div>
   </div>
 
@@ -64,11 +64,11 @@ p{color:#555;font-size:13px;line-height:1.6}
     </div>
     <div class="tab-p active" id="tab-t1">
       <div class="legend" id="leg1"></div>
-      <div class="chart-wrap"><canvas id="c1" role="img" aria-label="Confronto frasi ripetute vs nuove in S2 e S3">Caricamento...</canvas></div>
+      <div class="chart-wrap"><canvas id="c1">Caricamento...</canvas></div>
     </div>
     <div class="tab-p" id="tab-t2">
       <div class="legend" id="leg2"></div>
-      <div class="chart-wrap"><canvas id="c2" role="img" aria-label="Evoluzione credibilità frasi ripetute da S2 a S3">Caricamento...</canvas></div>
+      <div class="chart-wrap"><canvas id="c2">Caricamento...</canvas></div>
     </div>
     <div class="tab-p" id="tab-t3">
       <div id="ai-out" class="loading">Premi "Analisi AI" per generare l'interpretazione automatica.</div>
@@ -82,18 +82,16 @@ p{color:#555;font-size:13px;line-height:1.6}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-const SUPABASE_URL='https://ydfioyuwqaqhiscwgpok.supabase.co';
-const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkZmlveXV3cWFxaGlzY3dncG9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MzU4NTcsImV4cCI6MjA5MjMxMTg1N30.CRj5KxytTuWP7PPupR-xywZTdssKDkRCwldg89GOnHE';
-const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let allRows=[],charts={};
 const avg=arr=>arr.length?+(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2):0;
 
 async function loadData(){
-  const {data,error}=await supabase.from('risposte').select('*');
-  if(error){console.error(error);return;}
-  allRows=data||[];
+  try{
+    const r=await fetch('/api/leggi');
+    allRows=await r.json();
+  }catch(e){console.error(e);return;}
+
   const s1=allRows.filter(r=>r.sessione===1);
   const s2=allRows.filter(r=>r.sessione===2);
   const s3=allRows.filter(r=>r.sessione===3);
@@ -122,24 +120,11 @@ function drawC1(rS2,nS2,rS3,nS3){
     type:'bar',
     data:{
       labels:['Ripetute S2','Nuove S2','Ripetute S3','Nuove S3'],
-      datasets:[{
-        data:[rS2,nS2,rS3,nS3],
-        backgroundColor:['#3b82f6','#d1d5db','#1d4ed8','#9ca3af'],
-        borderColor:['#1d4ed8','#9ca3af','#1e3a8a','#6b7280'],
-        borderWidth:1
-      }]
+      datasets:[{data:[rS2,nS2,rS3,nS3],backgroundColor:['#3b82f6','#d1d5db','#1d4ed8','#9ca3af'],borderColor:['#1d4ed8','#9ca3af','#1e3a8a','#6b7280'],borderWidth:1}]
     },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      scales:{y:{min:1,max:7,ticks:{stepSize:1},title:{display:true,text:'Credibilità media (1–7)'}}},
-      plugins:{legend:{display:false},title:{display:true,text:'Frasi ripetute vs nuove — S2 e S3'}}
-    }
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:1,max:7,ticks:{stepSize:1},title:{display:true,text:'Credibilità media (1–7)'}}},plugins:{legend:{display:false},title:{display:true,text:'Frasi ripetute vs nuove — S2 e S3'}}}
   });
-  document.getElementById('leg1').innerHTML=`
-    <span><span class="lsq" style="background:#3b82f6"></span>Ripetute S2</span>
-    <span><span class="lsq" style="background:#d1d5db"></span>Nuove S2</span>
-    <span><span class="lsq" style="background:#1d4ed8"></span>Ripetute S3</span>
-    <span><span class="lsq" style="background:#9ca3af"></span>Nuove S3</span>`;
+  document.getElementById('leg1').innerHTML=`<span><span class="lsq" style="background:#3b82f6"></span>Ripetute S2</span><span><span class="lsq" style="background:#d1d5db"></span>Nuove S2</span><span><span class="lsq" style="background:#1d4ed8"></span>Ripetute S3</span><span><span class="lsq" style="background:#9ca3af"></span>Nuove S3</span>`;
 }
 
 function drawC2(rS2,rS3,nS2,nS3){
@@ -153,15 +138,9 @@ function drawC2(rS2,rS3,nS2,nS3){
         {label:'Frasi nuove',data:[nS2,nS3],borderColor:'#9ca3af',backgroundColor:'rgba(156,163,175,0.08)',tension:0.3,fill:true,pointRadius:6,pointBackgroundColor:'#9ca3af',borderDash:[4,4]}
       ]
     },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      scales:{y:{min:1,max:7,ticks:{stepSize:1},title:{display:true,text:'Credibilità media (1–7)'}},x:{ticks:{autoSkip:false}}},
-      plugins:{legend:{display:false},title:{display:true,text:'Evoluzione credibilità: frasi ripetute vs nuove'}}
-    }
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:1,max:7,ticks:{stepSize:1},title:{display:true,text:'Credibilità media (1–7)'}},x:{ticks:{autoSkip:false}}},plugins:{legend:{display:false},title:{display:true,text:'Evoluzione credibilità: frasi ripetute vs nuove'}}}
   });
-  document.getElementById('leg2').innerHTML=`
-    <span><span class="lsq" style="background:#1d4ed8"></span>Frasi ripetute (ITE)</span>
-    <span><span class="lsq" style="background:#9ca3af;border:1px dashed #6b7280"></span>Frasi nuove (controllo)</span>`;
+  document.getElementById('leg2').innerHTML=`<span><span class="lsq" style="background:#1d4ed8"></span>Frasi ripetute (ITE)</span><span><span class="lsq" style="background:#9ca3af"></span>Frasi nuove (controllo)</span>`;
 }
 
 function switchTab(name){
@@ -185,17 +164,15 @@ async function analyzeAI(){
   const novS3=s3.filter(r=>r.tipo==='nuova').map(r=>r.rating);
   const a=arr=>arr.length?(arr.reduce((x,y)=>x+y,0)/arr.length).toFixed(2):'N/D';
   const prompt=`Esperimento sull'Illusory Truth Effect, replica universitaria.
-Design: 3 sessioni. S1 (martedì): scala "interessante" 1-7, 16 frasi nuove — solo ancoraggio. S2 (giovedì): scala "vera" 1-7, 8 frasi già viste + 8 nuove. S3 (domenica): scala "vera" 1-7, stesse 8 frasi ripetute + 8 nuove diverse.
+Design: 3 sessioni. S1: scala interessante, solo ancoraggio. S2 (giovedì): scala vera 1-7, 8 frasi già viste + 8 nuove. S3 (domenica): scala vera 1-7, stesse 8 frasi ripetute + 8 nuove diverse.
 Partecipanti: ~34 studenti universitari.
-
 DATI:
-- S2 frasi ripetute (2a esposizione): ${a(repS2)} / 7
+- S2 frasi ripetute: ${a(repS2)} / 7
 - S2 frasi nuove: ${a(novS2)} / 7
-- S3 frasi ripetute (3a esposizione): ${a(repS3)} / 7
+- S3 frasi ripetute: ${a(repS3)} / 7
 - S3 frasi nuove: ${a(novS3)} / 7
-- Delta ITE (S2→S3): ${repS2.length&&repS3.length?(parseFloat(a(repS3))-parseFloat(a(repS2))).toFixed(2):'N/D'}
-
-Scrivi interpretazione accademica italiana (max 220 parole) in paragrafi: 1) Risultato principale — l'effetto ITE si è verificato? 2) Confronto con Hasher et al. 1977 3) Ruolo del gruppo di controllo (frasi nuove) 4) Limiti metodologici 5) Conclusione. Senza elenchi.`;
+- Delta ITE S2→S3: ${repS2.length&&repS3.length?(parseFloat(a(repS3))-parseFloat(a(repS2))).toFixed(2):'N/D'}
+Scrivi interpretazione accademica italiana max 220 parole in paragrafi: 1) Risultato principale 2) Confronto Hasher 1977 3) Ruolo controllo 4) Limiti 5) Conclusione. Senza elenchi.`;
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:'Sei esperto di psicologia cognitiva. Rispondi in italiano, in prosa, senza elenchi.',messages:[{role:'user',content:prompt}]})});
     const data=await resp.json();
@@ -207,7 +184,7 @@ Scrivi interpretazione accademica italiana (max 220 parole) in paragrafi: 1) Ris
 
 async function clearData(){
   if(!confirm('Cancellare tutti i dati?'))return;
-  await supabase.from('risposte').delete().neq('id',0);
+  await fetch('/api/leggi',{method:'DELETE'});
   loadData();
 }
 
